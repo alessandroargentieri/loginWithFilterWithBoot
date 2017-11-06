@@ -1,0 +1,119 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login - Free Bulma template</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
+    <!-- Bulma Version 0.6.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.0/css/bulma.min.css" integrity="sha256-HEtF7HLJZSC3Le1HcsWbz1hDYFPZCqDhZa9QsCgVUdw=" crossorigin="anonymous" />
+    <link rel="stylesheet" type="text/css" href="../css/login.css">
+</head>
+<body>
+<section class="hero is-success is-fullheight" id="signin_section">
+    <div class="hero-body">
+        <div class="container has-text-centered">
+            <div class="column is-4 is-offset-4">
+                <h3 class="title has-text-grey">Login</h3>
+                <p class="subtitle has-text-grey">Please login to proceed.</p>
+                <div class="box">
+                    <figure class="avatar">
+                        <img src="https://placehold.it/128x128">
+                    </figure>
+                    <form>
+                        <div class="field">
+                            <div class="control">
+                                <input class="input is-large" type="email" id="id" placeholder="Your Email" autofocus="">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="control">
+                                <input class="input is-large" type="password" id="password" placeholder="Your Password">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="checkbox">
+                                <input type="checkbox">
+                                Remember me
+                            </label>
+                        </div>
+                        <a class="button is-block is-info is-large" id="submit_button">Login</a>
+                    </form>
+                </div>
+                <p class="has-text-grey">
+                    <a href="../">Sign Up</a> &nbsp;·&nbsp;
+                    <a href="../">Forgot Password</a> &nbsp;·&nbsp;
+                    <a href="../">Need Help?</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+<section id="operation_section">
+    <h2> You're logged. </h2>
+    <h3>You can navigate an hypotetic site using forms and buttons with AJAX rest calls or write in the address bar of the browser the various Request Mappings, because browser has memorized the jwt in cookies and these cookies are sent in each HTTP request to the same server. So it will recognize the jwt and let you navigate.</h3>
+    <h3>For istance you can write <b>localhost:8684/users</b></h3>
+    <h3>If you click with right button on the page and select: inspect page, and go to Application>Cookies and delete "jwt" cookie, when you try to write again /users it redirects you to login page because servlet filter cannot find a jwt in the header of each request.
+</section>
+<script async type="text/javascript" src="../js/bulma.js"></script>
+<script>
+
+    $(document).ready(function(){
+            $("#signin_section").show();         /* it shows the sign in and hide the operation sections */
+            $("#operation_section").hide();
+            ChangeUrl("Signin","/signin.html");  /* it sets the new url when the page is loaded */
+     });
+
+      /* --------  functions  --------- */
+
+
+       /* function used to get the jwt from cookies after having saved it, for later async ajax calls to microservices */
+       function getCookie(name) {
+            var value = "; " + document.cookie;
+            var parts = value.split("; " + name + "=");
+            if (parts.length == 2)
+                return parts.pop().split(";").shift();
+       }
+
+        /* function used to change the text of the url giving the impression we're changing page */
+        function ChangeUrl(title, url) {
+            if (typeof (history.pushState) != "undefined") {
+               var obj = { Title: title, Url: url };
+               history.pushState(obj, obj.Title, obj.Url);
+            } else {
+               alert("Browser does not support HTML5.");
+            }
+        }
+
+
+    $("#submit_button").click(function(e) {
+            alert("Clicked");
+            e.preventDefault();
+            $.ajax({                                                        /* Ajax call to AccountMicroservice for login */
+               url: 'http://localhost:8684/login',
+               type: "POST",
+               data: {
+                  id: $("#id").val(),
+                  password: $("#password").val()
+               },
+               success: function (data, status, xhr) {
+                  $("#signin_section").hide();                              /* it hides sign in section and shows operation section */
+                  $("#operation_section").show();
+                  console.log(data);
+                  ChangeUrl("Operations","/operations.html");               /* it changes url after sign in */
+
+                  document.cookie = "jwt=" + xhr.getResponseHeader("jwt");  /* it saves in cookies the received token */
+               },
+               error: function(result) {
+                  alert("Sign in failed!");
+                  console.log(result);
+               }
+            });
+        });
+
+</script>
+</body>
+</html>
